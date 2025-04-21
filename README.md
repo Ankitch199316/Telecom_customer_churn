@@ -1,6 +1,6 @@
 # 📉 Telco Customer Churn Prediction: A Data Science Journey
 
-## 🧭 Introduction
+## 🛍️ Introduction
 
 As an aspiring data analyst, I embarked on this project to explore how data science can solve real-world business problems. I chose customer churn prediction because it blends data wrangling, exploratory analysis, machine learning, and actionable business strategy.
 
@@ -8,7 +8,7 @@ The goal was to predict which customers are most likely to leave a telecom provi
 
 ---
 
-## 🎯 Project Objectives
+## 🌟 Project Objectives
 
 - Analyze customer data to identify patterns associated with churn.
 - Build predictive models to forecast churn likelihood.
@@ -17,7 +17,7 @@ The goal was to predict which customers are most likely to leave a telecom provi
 
 ---
 
-## 🗂️ Dataset Overview
+## 📂 Dataset Overview
 
 - **Source:** [Telco Customer Churn - Kaggle](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
 - **Shape:** 7,043 rows × 21 columns
@@ -36,69 +36,138 @@ EDA helped surface critical relationships:
 
 **Key Charts:**
 
-- ![output_20_0](https://github.com/user-attachments/assets/eda495c3-2065-411d-af6e-983d54742b22)
-- ![output_22_0](https://github.com/user-attachments/assets/0b3d2dc4-cc48-40fe-ac3c-e5d0601e0939)
-- ![output_24_0](https://github.com/user-attachments/assets/78170541-6c21-4fe8-991a-5137b9ed0631)
-- ![output_27_0](https://github.com/user-attachments/assets/657dfe46-58b8-4f36-aa72-b993a52938b2)
-- ![output_29_0](https://github.com/user-attachments/assets/0dc5e16a-d48c-4b53-be70-da2b6778fef5)
-- ![output_31_0](https://github.com/user-attachments/assets/8e66bc69-b1d8-4a7b-bb0c-5e5a0b419b8f)
-- ![output_88_0](https://github.com/user-attachments/assets/8d5a16f5-c07d-4ef4-9edf-fe443865ec1b)
+![output_20_0](https://github.com/user-attachments/assets/e00170b1-d063-454e-8da7-17fa6199205d)
 
+![output_22_0](https://github.com/user-attachments/assets/d08a8fd7-98d9-457a-a46c-f8d4cc9fc789)
 
+![output_24_0](https://github.com/user-attachments/assets/388b346b-5719-49cf-ab4c-4a1a016a158c)
+
+![output_27_0](https://github.com/user-attachments/assets/2643095c-92b5-4530-bd6b-a6da08d5871f)
+
+![output_29_0](https://github.com/user-attachments/assets/303151cd-3f74-458c-9519-89813579f92d)
+
+![output_31_0](https://github.com/user-attachments/assets/1cfacee6-3aa2-48b5-895f-30f752ffd8c2)
+
+![output_88_0](https://github.com/user-attachments/assets/c47ff5dc-a9d8-4cb2-80c0-eb9d17773d9a)
 
 ---
 
-## 🛠️ Data Preprocessing & Feature Engineering
+## 🧼 Data Preprocessing
 
-**Missing Values:**
-- The `TotalCharges` column contained non-numeric values and nulls.
+To prepare the dataset for modeling, the following preprocessing steps were applied:
+
+- **Handled missing values:** The `TotalCharges` column had non-numeric entries. These were converted using `pd.to_numeric` and missing values were imputed using the median.
+
+  ```python
+  df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+  df['TotalCharges'].fillna(df['TotalCharges'].median(), inplace=True)
+  ```
+
+- **Dropped unnecessary columns:** `customerID` was removed as it had no predictive value.
+
+- **Encoded categorical features:** All object-type features were encoded using one-hot encoding.
+
+  ```python
+  df_encoded = pd.get_dummies(df, drop_first=True)
+  ```
+
+- **Scaled numerical features:** Continuous variables like `tenure`, `MonthlyCharges`, and `TotalCharges` were standardized using `StandardScaler` for better model performance.
+
+  ```python
+  scaler = StandardScaler()
+  df_encoded[numerical_features] = scaler.fit_transform(df_encoded[numerical_features])
+  ```
+
+---
+
+## 🧐 Feature Engineering
+
+Though this project primarily used existing features, the following engineering steps were applied:
+
+- **Binary Transformation:** Converted `SeniorCitizen` from 0/1 integer to a clear Yes/No binary column for consistency.
+- **Feature Reassessment:** Removed features with high multicollinearity or no variance (e.g., `customerID`).
+- **Planned but Skipped:** Grouping tenure into buckets (0–12 months, 13–24, etc.) was considered, but skipped to preserve numeric continuity for tree-based models.
+
+In future iterations, engineered features like `MonthlyCharge-to-Tenure ratio` or `Contract Length * Monthly Charges` could be explored.
+
+---
+
+## ⚙️ Model Tuning & Cross-Validation
+
+To enhance model generalization:
+
+- **Train-test split** was performed using `stratify=y` to preserve churn proportions.
+- **XGBoost** was optimized using basic hyperparameter tuning (grid search was optional due to time constraints).
+- **Cross-validation:** A 5-fold cross-validation strategy was considered for Logistic Regression and Random Forest models to avoid overfitting.
+
 ```python
-df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
-df['TotalCharges'].fillna(df['TotalCharges'].median(), inplace=True)
+from sklearn.model_selection import cross_val_score
+
+cv_scores = cross_val_score(xgb_model, X, y, cv=5, scoring='roc_auc')
+print("Avg CV AUC:", cv_scores.mean())
 ```
 
-**Encoding Categorical Variables:**
+- Final model (XGBoost) was selected for its highest ROC AUC (0.74) and balanced precision-recall tradeoff.
+
+---
+
+## 🔍 Feature Importance
+
+The XGBoost model provides insight into the most influential features in churn prediction:
+
 ```python
-df_encoded = pd.get_dummies(df, drop_first=True)
+import matplotlib.pyplot as plt
+from xgboost import plot_importance
+
+plot_importance(xgb_model, max_num_features=10)
+plt.title("Top 10 Feature Importances")
+plt.show()
 ```
 
-**Scaling Numerical Features:**
-```python
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-df_encoded[numerical_features] = scaler.fit_transform(df_encoded[numerical_features])
-```
+**Top predictors included:**
+- MonthlyCharges
+- Tenure
+- Contract_TwoYear
+- InternetService_FiberOptic
+- PaymentMethod_ElectronicCheck
 
-#### Modeling
+These insights directly informed the business recommendations below.
 
-**Models Tried**
+---
+
+## 📊 Model Performance
+
+### Models Tried:
 - Logistic Regression
 - Random Forest
 - XGBoost (Final Model)
 
-**Evaluation Metrics:**
+### Evaluation Metrics:
 - Accuracy
 - Precision
 - Recall
 - F1 Score
 - ROC AUC
 
-**Model Comparison:**
+### Model Comparison:
+
 | Model               | Accuracy | Precision | Recall | F1 Score | AUC  |
 |---------------------|----------|-----------|--------|----------|------|
 | Logistic Regression | 0.726    | 0.49      | 0.80   | 0.61     | 0.73 |
 | Random Forest       | 0.786    | 0.62      | 0.51   | 0.56     | 0.71 |
-| XGBoost             | 0.801    | 0.65      | 0.53   | 0.60     | 0.74 |
+| **XGBoost**         | **0.801**| **0.65**  | 0.53   | **0.60** | **0.74** |
 
+### Final Model Selection:
 
-#### Final Model Selection:
 XGBoost was chosen for deployment due to:
-
 - Highest accuracy and ROC AUC
 - Balanced precision and recall
 - Strong generalization on unseen data
 
-### 🚧 Challenges & Solutions
+---
+
+## 🚧 Challenges & Solutions
+
 | Challenge                  | What I Did                                                              |
 |----------------------------|-------------------------------------------------------------------------|
 | Missing `TotalCharges` values | Used `pd.to_numeric` and median imputation                          |
@@ -106,31 +175,42 @@ XGBoost was chosen for deployment due to:
 | Feature redundancy         | Identified and dropped multicollinear columns                          |
 | Model interpretability     | Compared multiple models and used feature importances                 |
 
+---
 
-### 📈 Key Insights & Business Recommendations
+## 📈 Business Implications
 
-**📉 Customers with Month-to-Month contracts are ~3× more likely to churn.**
-→ Recommend promoting yearly or 2-year plans with discounts.
+This project generated data-backed recommendations to improve customer retention:
 
-**🕒 Customers with tenure under 12 months are at highest churn risk.**
-→ Onboarding campaigns and early engagement could reduce churn.
+- 📉 **Contract Type:** Customers on month-to-month contracts churn significantly more.
+  - **Recommendation:** Promote yearly contracts with loyalty discounts.
 
-**💳 Customers paying via Electronic Check churn at higher rates.**
-→ Incentivize switching to auto-payment or card methods.
+- 🥒 **Tenure < 6 months = High Risk**
+  - **Recommendation:** Target new customers with onboarding engagement and proactive support.
 
-### 📊 Dashboards
+- 💳 **Electronic check users = High churn**
+  - **Recommendation:** Encourage customers to switch to auto-payment methods via incentives.
 
-**📌 Dashboard 1**: Churn Summary & Risk Explorer
-Includes KPIs, churn scatterplot, contract risk view, and top 100 high-risk customers.
+- 🧪 **Senior citizens with fiber plans showed higher risk**
+  - **Recommendation:** Tailor technical support and simplify plan offerings for this segment.
 
-<img width="1219" alt="Screenshot 2025-04-21 at 11 41 45 AM" src="https://github.com/user-attachments/assets/1a05d544-a308-4347-b939-2550c6375572" />
+---
 
-**📌 Dashboard 2**: Model Performance Comparison
-Shows Accuracy, Precision, Recall, F1, and AUC for all models.
+## 📊 Dashboards
 
-<img width="1224" alt="Screenshot 2025-04-21 at 11 42 06 AM" src="https://github.com/user-attachments/assets/9343978e-b3c7-4f04-991b-35f0c45ec354" />
+- 📌 **Dashboard 1:** Churn Summary & Risk Explorer  
+  Includes KPIs, churn scatterplot, contract risk view, and top 100 high-risk customers.  
+  
+<img width="1222" alt="Screenshot 2025-04-21 at 12 07 56 PM" src="https://github.com/user-attachments/assets/577ecbd8-426e-4fe7-9b98-88b61d75b6e8" />
 
-### 💻 Code Snippets
+- 📌 **Dashboard 2:** Model Performance Comparison  
+  Shows Accuracy, Precision, Recall, F1, and AUC for all models.  
+
+<img width="1218" alt="Screenshot 2025-04-21 at 12 08 18 PM" src="https://github.com/user-attachments/assets/fed20483-2fbc-461f-97ab-26f60239531a" />
+
+---
+
+## 💻 Code Snippets
+
 ```python
 # Splitting the data
 from sklearn.model_selection import train_test_split
@@ -158,12 +238,54 @@ from sklearn.metrics import classification_report
 y_pred = xgb.predict(X_test)
 print(classification_report(y_test, y_pred))
 ```
-### ✅ Conclusion
+
+---
+
+## 🛠️ How to Reproduce This Project
+
+### 📁 Directory Structure
+```
+├── data/
+│   ├── raw/                  # Original Telco Customer Churn CSV
+│   ├── cleaned/              # Preprocessed data files
+├── notebooks/
+│   ├── Telco_Customer_Churn.ipynb
+├── dashboards/
+│   ├── churn_summary_dashboard.twbx
+│   ├── model_performance_dashboard.twbx
+├── model_scores.csv
+├── model_comparison.csv
+├── README.md
+```
+
+### 📦 Requirements
+- Python 3.8+
+- pandas
+- numpy
+- scikit-learn
+- xgboost
+- seaborn
+- matplotlib
+- jupyter
+
+### ▶️ Steps to Run:
+1. Clone this repository
+2. Install dependencies via:
+   ```
+   pip install -r requirements.txt
+   ```
+3. Run the notebook:  
+   ```
+   jupyter notebook notebooks/Telco_Customer_Churn.ipynb
+   ```
+
+---
+
+## ✅ Conclusion
 
 This project helped me strengthen my end-to-end data science workflow — from raw data to actionable insights and stakeholder-ready dashboards.
 
 XGBoost delivered the best results and was used to score churn probabilities, which powered an interactive Tableau dashboard for decision-makers.
 
 Looking forward to applying this same mindset and rigor to future analytical challenges!
-
 

@@ -1,0 +1,8 @@
+Python 3.8+
+pandas
+numpy
+scikit-learn
+xgboost
+seaborn
+matplotlib
+jupyter

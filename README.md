@@ -2,18 +2,18 @@
 
 ## 🛍️ Introduction
 
-As an aspiring data analyst, I embarked on this project to explore how data science can solve real-world business problems. I chose customer churn prediction because it blends data wrangling, exploratory analysis, machine learning, and actionable business strategy.
+This project addresses customer churn in the telecom industry by predicting which customers are most likely to leave and translating those predictions into **retention prioritization insights**.
 
-The goal was to predict which customers are most likely to leave a telecom provider so that retention efforts can be focused effectively.
+The objective is to support data-driven decision-making by identifying high-risk customers, understanding the drivers behind churn, and enabling teams to focus retention efforts where they are most likely to have impact.
 
 ---
 
 ## 🌟 Project Objectives
 
-- Analyze customer data to identify patterns associated with churn.
-- Build predictive models to forecast churn likelihood.
-- Evaluate model performance and select the most effective one.
-- Provide actionable insights to reduce churn rates and inform retention strategy.
+- Identify behavioral and contract-level patterns associated with customer churn.
+- Develop a churn risk scoring approach to prioritize retention efforts.
+- Select a final model based on business-relevant performance trade-offs.
+- Translate analytical findings into practical retention and intervention strategies.
 
 ---
 
@@ -25,14 +25,15 @@ The goal was to predict which customers are most likely to leave a telecom provi
 
 ---
 
-## 🔍 Exploratory Data Analysis (EDA)
+## 🔍 Exploratory Analysis & Key Risk Signals
 
-EDA helped surface critical relationships:
+Exploratory analysis was used to identify **high-impact churn risk signals** relevant for retention decision-making:
 
-- **Churn Rate:** ~26.5% overall.
-- **Contract Type:** Month-to-month contracts are the most churn-prone.
-- **Tenure:** Lower tenure customers churn more often.
-- **Payment Method:** Electronic check users show higher churn rates.
+- **Overall churn rate (~26.5%)** indicates a meaningful retention challenge.
+- **Contract type:** Month-to-month customers exhibit significantly higher churn risk, highlighting contract structure as a key lever.
+- **Tenure:** Early-tenure customers are substantially more likely to churn, suggesting the need for early engagement strategies.
+- **Payment method:** Electronic check users show elevated churn, indicating potential friction in the billing experience.
+
 
 **Key Charts:**
 

@@ -52,87 +52,44 @@ Exploratory analysis was used to identify **high-impact churn risk signals** rel
 ![output_88_0](https://github.com/user-attachments/assets/c47ff5dc-a9d8-4cb2-80c0-eb9d17773d9a)
 
 ---
+## 🧼 Data Preparation & Feature Handling
 
-## 🧼 Data Preprocessing
+Data preparation focused on ensuring reliable churn signal extraction and model stability:
 
-To prepare the dataset for modeling, the following preprocessing steps were applied:
+- Cleaned and standardized numeric features (e.g., tenure, charges) to support model performance.
+- Handled missing and inconsistent values to preserve data integrity.
+- Encoded categorical variables for compatibility with tree-based and linear models.
+- Removed identifiers and low-signal features to avoid noise and leakage.
 
-- **Handled missing values:** The `TotalCharges` column had non-numeric entries. These were converted using `pd.to_numeric` and missing values were imputed using the median.
-
-  ```python
-  df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
-  df['TotalCharges'].fillna(df['TotalCharges'].median(), inplace=True)
-  ```
-
-- **Dropped unnecessary columns:** `customerID` was removed as it had no predictive value.
-
-- **Encoded categorical features:** All object-type features were encoded using one-hot encoding.
-
-  ```python
-  df_encoded = pd.get_dummies(df, drop_first=True)
-  ```
-
-- **Scaled numerical features:** Continuous variables like `tenure`, `MonthlyCharges`, and `TotalCharges` were standardized using `StandardScaler` for better model performance.
-
-  ```python
-  scaler = StandardScaler()
-  df_encoded[numerical_features] = scaler.fit_transform(df_encoded[numerical_features])
-  ```
+Feature handling decisions prioritized interpretability and robustness over excessive feature engineering.
 
 ---
 
-## 🧐 Feature Engineering
+## ⚙️ Model Training & Validation
 
-Though this project primarily used existing features, the following engineering steps were applied:
+Multiple classification models were evaluated to estimate churn risk, including Logistic Regression, Random Forest, and XGBoost.
 
-- **Binary Transformation:** Converted `SeniorCitizen` from 0/1 integer to a clear Yes/No binary column for consistency.
-- **Feature Reassessment:** Removed features with high multicollinearity or no variance (e.g., `customerID`).
-- **Planned but Skipped:** Grouping tenure into buckets (0–12 months, 13–24, etc.) was considered, but skipped to preserve numeric continuity for tree-based models.
+Model selection prioritized:
+- Predictive performance (ROC-AUC)
+- Recall balance for identifying high-risk customers
+- Stability across validation splits
 
-In future iterations, engineered features like `MonthlyCharge-to-Tenure ratio` or `Contract Length * Monthly Charges` could be explored.
+XGBoost was selected as the final model due to its balanced performance (ROC-AUC ≈ 0.74) and ability to capture non-linear churn patterns.
 
----
-
-## ⚙️ Model Tuning & Cross-Validation
-
-To enhance model generalization:
-
-- **Train-test split** was performed using `stratify=y` to preserve churn proportions.
-- **XGBoost** was optimized using basic hyperparameter tuning (grid search was optional due to time constraints).
-- **Cross-validation:** A 5-fold cross-validation strategy was considered for Logistic Regression and Random Forest models to avoid overfitting.
-
-```python
-from sklearn.model_selection import cross_val_score
-
-cv_scores = cross_val_score(xgb_model, X, y, cv=5, scoring='roc_auc')
-print("Avg CV AUC:", cv_scores.mean())
-```
-
-- Final model (XGBoost) was selected for its highest ROC AUC (0.74) and balanced precision-recall tradeoff.
 
 ---
 
-## 🔍 Feature Importance
+## 🔍 Key Churn Drivers
 
-The XGBoost model provides insight into the most influential features in churn prediction:
+Feature importance analysis highlighted the strongest drivers of customer churn:
 
-```python
-import matplotlib.pyplot as plt
-from xgboost import plot_importance
+- **Contract type:** Long-term contracts significantly reduce churn risk.
+- **Tenure:** Early-tenure customers are more vulnerable to churn.
+- **Monthly charges:** Higher charges correlate with increased churn likelihood.
+- **Service type:** Fiber optic internet customers show elevated churn.
+- **Payment method:** Electronic check usage is associated with higher churn.
 
-plot_importance(xgb_model, max_num_features=10)
-plt.title("Top 10 Feature Importances")
-plt.show()
-```
-
-**Top predictors included:**
-- MonthlyCharges
-- Tenure
-- Contract_TwoYear
-- InternetService_FiberOptic
-- PaymentMethod_ElectronicCheck
-
-These insights directly informed the business recommendations below.
+These drivers informed the retention prioritization and recommendations outlined below.
 
 ---
 
@@ -282,11 +239,10 @@ print(classification_report(y_test, y_pred))
 
 ---
 
-## ✅ Conclusion
+## 🚀 Conclusion
 
-This project helped me strengthen my end-to-end data science workflow — from raw data to actionable insights and stakeholder-ready dashboards.
+This project demonstrates how customer churn prediction can be translated from model outputs into **practical retention prioritization** for a telecom business.
 
-XGBoost delivered the best results and was used to score churn probabilities, which powered an interactive Tableau dashboard for decision-makers.
+By identifying high-risk customer segments, understanding key churn drivers, and selecting a model based on business-relevant trade-offs, the analysis shows how data can support targeted interventions rather than blanket discounting. The results highlight where retention efforts are likely to be most effective and how analytical insights can directly inform contract strategy, billing optimization, and customer experience improvements.
 
-Looking forward to applying this same mindset and rigor to future analytical challenges!
 
